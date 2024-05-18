@@ -13,6 +13,13 @@ go build -o stress
 GOOS=windows GOARCH=amd64 go build -o stress.exe
 ```
 
+If you don't have golang installed locally, use the docker image to compile the executable.
+
+```bash
+# assuming you're in the project directory
+docker run --rm -it -v "./:/go" -e "GOOS=windows" -e "GOARCH=amd64" golang:1.22.3-alpine go build -o stress.exe
+```
+
 ## Usage
 
 ```
