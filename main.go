@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"math/rand"
 	"runtime"
 	"strconv"
@@ -73,14 +74,35 @@ func generateCPULoad(seconds int) (*[]int64, *sync.WaitGroup) {
 
 	iterations := make([]int64, cpuCount)
 
+	// Increasing this number will increase calculation complexity
+	iterationsPerSecond := 100000
+	secondsAsFloat := float64(seconds)
+
 	for i := 0; i < cpuCount; i++ {
 		go func(index int) {
 			defer tasks.Done()
-			start := time.Now()
-			for time.Since(start).Seconds() < float64(seconds) {
-				_ = rand.Float64() * rand.Float64()
 
+			start := time.Now()
+			elapsed := time.Since(start).Seconds()
+
+			// Ever increasing number to make math.Sqrt more complex
+			problemFactor := 0.0
+
+			for {
+				if elapsed >= secondsAsFloat {
+					break
+				}
+
+				for k := 0; k < iterationsPerSecond; k++ {
+					// Pi * e
+					_ = 3.14159265358979323846 * 2.71828182845904523536
+					_ = 1.0
+					_ = rand.Float64() * rand.Float64()
+					_ = math.Sqrt(problemFactor)
+					problemFactor += 1.0
+				}
 				iterations[index] += 1
+				elapsed = time.Since(start).Seconds()
 			}
 		}(i)
 	}
@@ -94,7 +116,7 @@ func calculateCPUScore(seconds int, iterations *[]int64) float64 {
 		sum += float64(value)
 	}
 
-	return sum / float64(seconds) / 10000.0
+	return sum / float64(seconds)
 }
 
 func main() {
