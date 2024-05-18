@@ -61,31 +61,47 @@ func allocateMemory(bytes int64) {
 	}
 }
 
-// Generate workload for all available CPU cores for the given `seconds`
-func generateCPULoad(seconds int) *sync.WaitGroup {
+// Generate workload for all available CPU cores for the given `seconds`.
+// Returns a `slice` containing number of iterations done by each goroutine (cpu
+// cores) and goroutine WaitGroup.
+func generateCPULoad(seconds int) (*[]int64, *sync.WaitGroup) {
 	fmt.Printf("Performing CPU work for %d seconds\n", seconds)
 	cpuCount := runtime.NumCPU()
 
 	var tasks sync.WaitGroup
 	tasks.Add(cpuCount)
 
+	iterations := make([]int64, cpuCount)
+
 	for i := 0; i < cpuCount; i++ {
-		go func() {
+		go func(index int) {
 			defer tasks.Done()
 			start := time.Now()
 			for time.Since(start).Seconds() < float64(seconds) {
 				_ = rand.Float64() * rand.Float64()
+
+				iterations[index] += 1
 			}
-		}()
+		}(i)
 	}
 
-	return &tasks
+	return &iterations, &tasks
+}
+
+func calculateCPUScore(seconds int, iterations *[]int64) float64 {
+	sum := float64(0)
+	for _, value := range *iterations {
+		sum += float64(value)
+	}
+
+	return sum / float64(seconds) / 10000.0
 }
 
 func main() {
 	flags := parseFlags()
 
 	var cpuTasks *sync.WaitGroup
+	var cpuIterations *[]int64
 
 	if flags.Help || flag.NFlag() == 0 {
 		flag.Usage()
@@ -93,7 +109,7 @@ func main() {
 	}
 
 	if flags.CPUSeconds > 0 {
-		cpuTasks = generateCPULoad(flags.CPUSeconds)
+		cpuIterations, cpuTasks = generateCPULoad(flags.CPUSeconds)
 	}
 
 	if flags.Memory != "" {
@@ -109,6 +125,7 @@ func main() {
 	if cpuTasks != nil {
 		// Block untill all cpuTasks finish
 		cpuTasks.Wait()
+		fmt.Printf("CPU score: %.0f\n", calculateCPUScore(flags.CPUSeconds, cpuIterations))
 	}
 
 	fmt.Println("Workload generation complete.")

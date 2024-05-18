@@ -1,6 +1,7 @@
 # stress
 
-A simple tool for generating CPU workload and memory allocation.
+A simple tool for generating CPU workload and memory allocation. Useful for
+creating stress test and benchmarking.
 
 ## Usage
 
