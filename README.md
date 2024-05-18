@@ -5,6 +5,22 @@ creating stress test and benchmarking.
 
 ## Usage
 
+```
+$ stress -time 30
+
+Performing CPU work for 30 seconds
+CPU score: 9801
+Workload generation complete.
+```
+
+### Locally
+
+```bash
+git clone https://github.com/karunsiri/stress
+cd stress
+go run main.go -time 30
+```
+
 ### Docker
 
 See available flags below.
