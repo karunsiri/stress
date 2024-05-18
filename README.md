@@ -3,6 +3,16 @@
 A simple tool for generating CPU workload and memory allocation. Useful for
 creating stress test and benchmarking.
 
+## Compiling
+
+```bash
+go build -o stress
+./stress -time 30
+
+# Or compile for other platforms. Copy the output '.exe' file to run on Windows
+GOOS=windows GOARCH=amd64 go build -o stress.exe
+```
+
 ## Usage
 
 ```
@@ -13,7 +23,27 @@ CPU score: 9801
 Workload generation complete.
 ```
 
-### Locally
+See available flags below.
+
+#### Generate max CPU workload for 30 seconds
+
+```bash
+$ stress -time 30
+```
+
+#### Allocate 20GB of memory, or error if system doesn't have enough available memory
+
+```bash
+$ stress -mem 20G
+```
+
+#### Allocate 20GB of memory, and generate CPU workload for 60 seconds
+
+```bash
+$ stress -time 60 -mem 20G
+```
+
+#### Locally
 
 ```bash
 git clone https://github.com/karunsiri/stress
@@ -21,30 +51,10 @@ cd stress
 go run main.go -time 30
 ```
 
-### Docker
+#### Docker
 
-See available flags below.
 ```bash
 docker run --rm -it karunsiri/stress [flags]
-```
-
-
-Generate max CPU workload for 30 seconds
-
-```bash
-docker run --rm -it karunsiri/stress -time 30
-```
-
-Allocate 20GB of memory, or error if system doesn't have enough available memory
-
-```bash
-docker run --rm -it karunsiri/stress -mem 20G
-```
-
-Allocate 20GB of memory, and generate CPU workload for 60 seconds
-
-```bash
-docker run --rm -it karunsiri/stress -time 60 -mem 20G
 ```
 
 ### Kubernetes
