@@ -11,6 +11,23 @@ import (
 	"time"
 )
 
+type Flag struct {
+	CPUSeconds int
+	Help       bool
+	Memory     string
+}
+
+func parseFlags() Flag {
+	flags := Flag{}
+
+	flag.StringVar(&flags.Memory, "mem", "", "Amount of memory to allocate. Ex 300, 1K, 5G, 20M")
+	flag.IntVar(&flags.CPUSeconds, "time", 0, "Duration of CPU workload in seconds")
+	flag.BoolVar(&flags.Help, "help", false, "Show usage")
+	flag.Parse()
+
+	return flags
+}
+
 func parseBytes(str string) (int64, error) {
 	str = strings.TrimSpace(str)
 	suffixes := map[string]int64{
@@ -45,7 +62,7 @@ func allocateMemory(bytes int64) {
 }
 
 // Generate workload for all available CPU cores for the given `seconds`
-func generateCpuLoad(seconds int) *sync.WaitGroup {
+func generateCPULoad(seconds int) *sync.WaitGroup {
 	fmt.Printf("Performing CPU work for %d seconds\n", seconds)
 	cpuCount := runtime.NumCPU()
 
@@ -66,26 +83,23 @@ func generateCpuLoad(seconds int) *sync.WaitGroup {
 }
 
 func main() {
-	memoryArgument := flag.String("mem", "", "Amount of memory to allocate. Ex 300, 1K, 5G, 20M")
-	cpuSecondArgument := flag.Int("time", 0, "Duration of CPU workload in seconds")
-	helpArgument := flag.Bool("help", false, "Show usage")
-	flag.Parse()
+	flags := parseFlags()
 
 	var cpuTasks *sync.WaitGroup
 
-	if *helpArgument || flag.NFlag() == 0 {
+	if flags.Help || flag.NFlag() == 0 {
 		flag.Usage()
 		return
 	}
 
-	if *cpuSecondArgument > 0 {
-		cpuTasks = generateCpuLoad(*cpuSecondArgument)
+	if flags.CPUSeconds > 0 {
+		cpuTasks = generateCPULoad(flags.CPUSeconds)
 	}
 
-	if *memoryArgument != "" {
-		bytes, err := parseBytes(*memoryArgument)
+	if flags.Memory != "" {
+		bytes, err := parseBytes(flags.Memory)
 		if err == nil {
-			fmt.Printf("Allocating %s (%d bytes) of memory...\n", *memoryArgument, bytes)
+			fmt.Printf("Allocating %s (%d bytes) of memory...\n", flags.Memory, bytes)
 			allocateMemory(bytes)
 		} else {
 			fmt.Println("Error: ", err)
