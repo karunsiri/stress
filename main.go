@@ -5,16 +5,20 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
+	"os/signal"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
 type Flag struct {
 	CPUSeconds int
 	Help       bool
+	KeepAlive  bool
 	Memory     string
 }
 
@@ -23,6 +27,7 @@ func parseFlags() Flag {
 
 	flag.StringVar(&flags.Memory, "mem", "", "Amount of memory to allocate. Ex 300, 1K, 5G, 20M")
 	flag.IntVar(&flags.CPUSeconds, "time", 0, "Duration of CPU workload in seconds")
+	flag.BoolVar(&flags.KeepAlive, "keep-alive", false, "Keep the program running after workload generation")
 	flag.BoolVar(&flags.Help, "help", false, "Show usage")
 	flag.Parse()
 
@@ -50,6 +55,17 @@ func parseBytes(str string) (int64, error) {
 
 	// Return as bytes directly otherwise
 	return strconv.ParseInt(str, 10, 64)
+}
+
+func waitForTermination() {
+	terminate := make(chan os.Signal, 1)
+	// The -15 and -9
+	signal.Notify(terminate, syscall.SIGINT, syscall.SIGTERM)
+
+	// Block until a signal is received
+	<-terminate
+
+	fmt.Println("Terminating...")
 }
 
 func allocateMemory(bytes int64) {
@@ -151,4 +167,8 @@ func main() {
 	}
 
 	fmt.Println("Workload generation complete.")
+
+	if flags.KeepAlive {
+		waitForTermination()
+	}
 }

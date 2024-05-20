@@ -92,11 +92,14 @@ spec:
         args:
           - '-time=60'
           - '-mem=1G'
+          - '-keep-alive'
 ```
 
 ## Available flags:
 
 - `-help`: Show usage
+- `-keep-alive`: Keep the program running after workload generation. Useful for
+  simulating service workload.
 - `-mem`: Amount of memory to allocate. Support single number, or number with suffixes 'K', 'M', 'G'.
   For example, `400` means 400 bytes. `400M` means 400MB, and so on.
 - `-time`: Duration of CPU workload in seconds.
